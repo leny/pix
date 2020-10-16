@@ -115,14 +115,18 @@ describe('Integration | Component | signin form', function() {
   describe('Behaviours', function() {
 
     it('should authenticate user when she submitted sign-in form', async function() {
+
+      let actualEmail;
+      let actualPassword;
+
       // given
       const expectedEmail = 'email@example.fr';
       const expectedPassword = 'azerty';
 
       this.set('onSubmitAction', function(email, password) {
         // then
-        expect(email).to.equal(expectedEmail);
-        expect(password).to.equal(expectedPassword);
+        actualEmail = email;
+        actualPassword = password;
         return Promise.resolve();
       });
 
