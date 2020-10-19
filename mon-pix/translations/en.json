@@ -726,6 +726,12 @@
             "subtitle": {
                 "text": "Don’t have a Pix account yet?",
                 "link": "Create an account"
+            },
+            "pole-emploi": {
+                "link": {
+                    "title": "",
+                    "img": ""
+                }
             }
         },
         "sign-up": {
