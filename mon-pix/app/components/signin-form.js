@@ -16,6 +16,8 @@ export default class SigninForm extends Component {
   username = '';
   password = '';
 
+  isPoleEmploiEnabled = ENV.APP.IS_POLE_EMPLOI_ENABLED;
+
   get homeUrl() {
     return this.url.homeUrl;
   }

@@ -53,6 +53,30 @@ describe('Integration | Component | signin form', function() {
       expect(document.querySelector('a.sign-form-body__forgotten-password-link')).to.exist;
     });
 
+    it('should display a Pole emploi button if Pole emploi connection is enabled', async function() {
+      // given
+      ENV.APP.IS_POLE_EMPLOI_ENABLED = true;
+      const linkTitle = this.intl.t('pages.sign-in.pole-emploi.link.title');
+
+      // when
+      await render(hbs `<SigninForm />`);
+
+      // then
+      expect(find(`a[aria-label="${linkTitle}"]`)).to.exist;
+    });
+
+    it('should not display a Pole emploi button if Pole emploi connection is disabled', async function() {
+      // given
+      ENV.APP.IS_POLE_EMPLOI_ENABLED = false;
+      const linkTitle = this.intl.t('pages.sign-in.pole-emploi.link.title');
+
+      // when
+      await render(hbs `<SigninForm />`);
+
+      // then
+      expect(find(`a[aria-label="${linkTitle}"]`)).not.to.exist;
+    });
+
     it('should not display any error by default', async function() {
       // when
       await render(hbs`<SigninForm />`);
@@ -107,7 +131,6 @@ describe('Integration | Component | signin form', function() {
         // then
         expect(document.querySelector('div.sign-form__notification-message--error')).to.exist;
         expect(find('.sign-form__notification-message--error').textContent.trim()).to.equal(this.intl.t(ApiErrorMessages.INTERNAL_SERVER_ERROR.MESSAGE));
-
       });
     });
   });
@@ -139,7 +162,10 @@ describe('Integration | Component | signin form', function() {
 
       // when
       await click('button.button');
-    });
 
+      // Then
+      expect(actualEmail).to.equal(expectedEmail);
+      expect(actualPassword).to.equal(expectedPassword);
+    });
   });
 });
