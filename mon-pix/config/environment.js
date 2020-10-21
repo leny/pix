@@ -32,6 +32,16 @@ module.exports = function(environment) {
       },
     },
 
+    'ember-simple-auth-oidc': {
+      afterLogoutUri: process.env.HOME_URL,
+      authEndpoint: '/connexion/oauth2/authorize',
+      clientId: process.env.API_PE_CLIENT_ID,
+      endSessionEndpoint: '/compte/deconnexion',
+      expiresIn: 60000, // Short expire time (60s) for testing purpose
+      host: 'https://authentification-candidat.pole-emploi.fr',
+      scope: process.env.SCOPE,
+    },
+
     APP: {
       // Here you can pass flags/options to your application instance
       // when it is created
@@ -74,6 +84,8 @@ module.exports = function(environment) {
         },
       },
       AUTHENTICATED_SOURCE_FROM_MEDIACENTRE: 'external',
+
+      IS_POLE_EMPLOI_ENABLED: _isFeatureEnabled(process.env.IS_POLE_EMPLOI_ENABLED),
     },
 
     googleFonts: [
@@ -139,6 +151,12 @@ module.exports = function(environment) {
       ENV.matomo.debug = true;
     }
     ENV.APP.FT_IMPROVE_COMPETENCE_EVALUATION = true;
+
+    ENV.APP.IS_POLE_EMPLOI_ENABLED = true;
+    ENV['ember-simple-auth-oidc'].clientId = 'PAR_pix_00e45ef924835ff86fa6df617b1af4fbc2a8cdba84adcc5e75b65ec4becb1b56';
+    ENV['ember-simple-auth-oidc'].scope = 'application_PAR_pix_00e45ef924835ff86fa6df617b1af4fbc2a8cdba84adcc5e75b65ec4becb1b56%20api_peconnect-individuv1%20openid%20profile%20email';
+
+    ENV['ember-simple-auth-oidc'].afterLogoutUri = 'http://localhost:8080/';
   }
 
   if (environment === 'test') {
