@@ -44,11 +44,10 @@ export default class AddStudentList extends Component {
     // todo : remonter cette méthode dans la route add-student ? 🤔
     const sessionId = this.args.session.id;
     const studentListToAdd = this.args.studentList.filter((student) => student.isSelected);
-    console.log(studentListToAdd);
     try {
       await this.args.session.save({ adapterOptions: { studentListToAdd, sessionId } });
+      this.args.returnToSessionCandidates(sessionId);
     } catch (error) {
-      // todo : check error mieux
       this.notifications.error('Une erreur est survenue au moment d‘enregistrer les candidats... ');
     }
   }
