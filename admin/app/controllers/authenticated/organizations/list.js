@@ -1,7 +1,7 @@
 import Controller from '@ember/controller';
 import { action } from '@ember/object';
 import { tracked } from '@glimmer/tracking';
-import { task, timeout } from 'ember-concurrency';
+import debounce from 'lodash/debounce';
 import config from 'pix-admin/config/environment';
 
 const DEFAULT_PAGE_NUMBER = 1;
@@ -16,16 +16,18 @@ export default class ListController extends Controller {
   @tracked name = null;
   @tracked type = null;
   @tracked externalId = null;
-  pendingFilters = {};
 
-  @(task(function * (fieldName, event) {
-    const value = event.target.value;
-    this.pendingFilters[fieldName] = value;
-    yield timeout(this.DEBOUNCE_MS);
-    this.setProperties(this.pendingFilters);
-    this.pendingFilters = {};
+  updateFilters(filters) {
+    Object.keys(filters).forEach((filterKey) => this[filterKey] = filters[filterKey]);
     this.pageNumber = DEFAULT_PAGE_NUMBER;
-  }).restartable()) triggerFiltering;
+  }
+
+  debouncedUpdateFilters = debounce(this.updateFilters, this.DEBOUNCE_MS);
+
+  @action
+  triggerFiltering(fieldName, event) {
+    this.debouncedUpdateFilters({ [fieldName]: event.target.value });
+  }
 
   @action
   goToOrganizationPage(organizationId) {

@@ -11,23 +11,23 @@
           <th>
             <input id="name"
                    type="text"
-                   value={{unbound @name}}
-                   oninput={{perform @triggerFiltering 'name'}}
-                   class="table-admin-input" />
+                   value={{@name}}
+                   oninput={{fn @triggerFiltering 'name'}}
+                   class="table-admin-input form-control" />
           </th>
           <th>
             <input id="type"
                    type="text"
-                   value={{unbound @type}}
-                   oninput={{perform @triggerFiltering 'type'}}
-                   class="table-admin-input" />
+                   value={{@type}}
+                   oninput={{fn @triggerFiltering 'type'}}
+                   class="table-admin-input form-control" />
           </th>
           <th>
             <input id="externalId"
                    type="text"
-                   value={{unbound @externalId}}
-                   oninput={{perform @triggerFiltering 'externalId'}}
-                   class="table-admin-input" />
+                   value={{@externalId}}
+                   oninput={{fn @triggerFiltering 'externalId'}}
+                   class="table-admin-input form-control" />
           </th>
         </tr>
       </thead>
@@ -35,7 +35,7 @@
       {{#if @organizations}}
         <tbody>
         {{#each @organizations as |organization|}}
-          <tr role="button" {{on "click" (fn @goToOrganizationPage organization.id)}} class="tr--clickable">
+          <tr aria-label="Organisation" role="button" {{on "click" (fn @goToOrganizationPage organization.id)}} class="tr--clickable">
             <td>{{organization.name}}</td>
             <td>{{organization.type}}</td>
             <td>{{organization.externalId}}</td>
