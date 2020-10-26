@@ -1504,6 +1504,229 @@ describe('Integration | Repository | knowledgeElementRepository', () => {
     });
   });
 
+  describe('#findValidatedTargetedGroupedByTubesForUsers', () => {
+
+    afterEach(() => {
+      return knex('knowledge-element-snapshots').delete();
+    });
+
+    it('should return knowledge elements within respective dates grouped by userId and tubeId within target profile of campaign', async () => {
+      // given
+      const skill1 = domainBuilder.buildTargetedSkill({ id: 'skill1', tubeId: 'tube1' });
+      const skill2 = domainBuilder.buildTargetedSkill({ id: 'skill2', tubeId: 'tube1' });
+      const skill3 = domainBuilder.buildTargetedSkill({ id: 'skill3', tubeId: 'tube2' });
+      const tube1 = domainBuilder.buildTargetedTube({ id: 'tube1', skills: [skill1, skill2], competenceId: 'competence' });
+      const tube2 = domainBuilder.buildTargetedTube({ id: 'tube2', skills: [skill3], competenceId: 'competence' });
+      const competence = domainBuilder.buildTargetedCompetence({ id: 'competence', tubes: [tube1, tube2], areaId: 'areaId' });
+      const area = domainBuilder.buildTargetedArea({ id: 'areaId', competences: [competence] });
+      const targetProfile = domainBuilder.buildTargetProfileWithLearningContent({
+        skills: [skill1, skill2, skill3],
+        tubes: [tube1, tube2],
+        competences: [competence],
+        areas: [area],
+      });
+      const userId1 = databaseBuilder.factory.buildUser().id;
+      const userId2 = databaseBuilder.factory.buildUser().id;
+      const dateUserId1 = new Date('2020-01-03');
+      const dateUserId2 = new Date('2019-01-03');
+      const knowledgeElement1_1 = databaseBuilder.factory.buildKnowledgeElement({ competenceId: competence.id, userId: userId1, createdAt: new Date('2020-01-02'), skillId: skill1.id });
+      const knowledgeElement1_2 = databaseBuilder.factory.buildKnowledgeElement({ competenceId: competence.id, userId: userId1, createdAt: new Date('2020-01-02'), skillId: skill2.id });
+      databaseBuilder.factory.buildKnowledgeElement({ competenceId: competence.id, userId: userId1, createdAt: new Date('2021-01-02') });
+      const knowledgeElement2_1 = databaseBuilder.factory.buildKnowledgeElement({ competenceId: competence.id, userId: userId2, createdAt: new Date('2019-01-02'), skillId: skill1.id });
+      const knowledgeElement2_2 = databaseBuilder.factory.buildKnowledgeElement({ competenceId: competence.id, userId: userId2, createdAt: new Date('2019-01-02'), skillId: skill3.id });
+      databaseBuilder.factory.buildKnowledgeElement({ competenceId: competence.id, userId: userId2, createdAt: new Date('2020-01-02') });
+      await databaseBuilder.commit();
+
+      // when
+      const knowledgeElementsByUserIdAndTubeId =
+        await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId1]: dateUserId1, [userId2]: dateUserId2 }, targetProfile);
+
+      // then
+      expect(knowledgeElementsByUserIdAndTubeId[userId1][tube1.id][0]).to.be.instanceOf(KnowledgeElement);
+      expect(knowledgeElementsByUserIdAndTubeId[userId1][tube1.id].length).to.equal(2);
+      expect(knowledgeElementsByUserIdAndTubeId[userId1][tube1.id]).to.deep.include.members([knowledgeElement1_1, knowledgeElement1_2]);
+      expect(knowledgeElementsByUserIdAndTubeId[userId2]).to.deep.equal({
+        [tube1.id]: [knowledgeElement2_1],
+        [tube2.id]: [knowledgeElement2_2],
+      });
+    });
+
+    it('should return the knowledge elements in the snapshot when user has a snapshot for this date', async () => {
+      // given
+      const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+      const userId = databaseBuilder.factory.buildUser().id;
+      const dateUserId = new Date('2020-01-03');
+      const knowledgeElement = databaseBuilder.factory.buildKnowledgeElement({
+        userId,
+        competenceId: targetProfile.tubes[0].id,
+        skillId: targetProfile.skills[0].id,
+      });
+      databaseBuilder.factory.buildKnowledgeElementSnapshot({ userId, snappedAt: dateUserId, snapshot: JSON.stringify([knowledgeElement]) });
+      await databaseBuilder.commit();
+
+      // when
+      const knowledgeElementsByUserIdAndTubeId =
+        await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: dateUserId }, targetProfile);
+
+      // then
+      expect(knowledgeElementsByUserIdAndTubeId[userId][targetProfile.tubes[0].id][0]).to.deep.equal(knowledgeElement);
+    });
+
+    context('when user does not have a snapshot for this date', () => {
+
+      context('when no date is provided along with the user', () => {
+
+        it('should return the knowledge elements with limit date as now', async () => {
+          // given
+          const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+          const userId = databaseBuilder.factory.buildUser().id;
+          const expectedKnowledgeElement = databaseBuilder.factory.buildKnowledgeElement({
+            userId,
+            createdAt: new Date('2018-01-01'),
+            competenceId: targetProfile.tubes[0].id,
+            skillId: targetProfile.skills[0].id,
+          });
+          await databaseBuilder.commit();
+
+          // when
+          const knowledgeElementsByUserIdAndTubeId =
+            await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: null }, targetProfile);
+
+          // then
+          expect(knowledgeElementsByUserIdAndTubeId[userId]).to.deep.equal({
+            [targetProfile.tubes[0].id]: [expectedKnowledgeElement],
+          });
+        });
+
+        it('should not trigger snapshotting', async () => {
+          // given
+          const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+          const userId = databaseBuilder.factory.buildUser().id;
+          databaseBuilder.factory.buildKnowledgeElement({
+            userId,
+            createdAt: new Date('2018-01-01'),
+            competenceId: targetProfile.tubes[0].id,
+            skillId: targetProfile.skills[0].id,
+          });
+          await databaseBuilder.commit();
+
+          // when
+          await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: null }, targetProfile);
+
+          // then
+          const actualUserSnapshots = await knex.select('*').from('knowledge-element-snapshots').where({ userId });
+          expect(actualUserSnapshots.length).to.equal(0);
+        });
+      });
+
+      context('when a date is provided along with the user', () => {
+
+        it('should return the knowledge elements at date', async () => {
+          // given
+          const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+          const userId = databaseBuilder.factory.buildUser().id;
+          const expectedKnowledgeElement = databaseBuilder.factory.buildKnowledgeElement({
+            userId,
+            createdAt: new Date('2018-01-01'),
+            competenceId: targetProfile.tubes[0].id,
+            skillId: targetProfile.skills[0].id,
+          });
+          await databaseBuilder.commit();
+
+          // when
+          const knowledgeElementsByUserIdAndTubeId =
+            await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: new Date('2018-02-01') }, targetProfile);
+
+          // then
+          expect(knowledgeElementsByUserIdAndTubeId[userId]).to.deep.equal({
+            [targetProfile.tubes[0].id]: [expectedKnowledgeElement],
+          });
+        });
+
+        it('should save a snasphot', async () => {
+          // given
+          const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+          const userId = databaseBuilder.factory.buildUser().id;
+          databaseBuilder.factory.buildKnowledgeElement({
+            userId,
+            createdAt: new Date('2018-01-01'),
+            competenceId: targetProfile.tubes[0].id,
+            skillId: targetProfile.skills[0].id,
+          });
+          await databaseBuilder.commit();
+
+          // when
+          await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: new Date('2018-02-01') }, targetProfile);
+
+          // then
+          const actualUserSnapshots = await knex.select('*').from('knowledge-element-snapshots').where({ userId });
+          expect(actualUserSnapshots.length).to.equal(1);
+        });
+      });
+    });
+
+    it('should avoid returning non targeted knowledge elements when there are knowledge elements that are not in the target profile', async () => {
+      // given
+      const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+      const userId = databaseBuilder.factory.buildUser().id;
+      databaseBuilder.factory.buildKnowledgeElement({
+        userId,
+        createdAt: new Date('2018-01-01'),
+        competenceId: targetProfile.tubes[0].id,
+        skillId: 'id_de_skill_improbable_et_different_de_celui_du_builder',
+      });
+      await databaseBuilder.commit();
+
+      // when
+      const knowledgeElementsByUserIdAndTubeId =
+        await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: null }, targetProfile);
+
+      // then
+      expect(knowledgeElementsByUserIdAndTubeId[userId]).to.deep.equal({
+        [targetProfile.tubes[0].id]: [],
+      });
+    });
+
+    it('should exclusively return validated knowledge elements', async () => {
+      // given
+      const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+      const userId = databaseBuilder.factory.buildUser().id;
+      databaseBuilder.factory.buildKnowledgeElement({
+        userId,
+        createdAt: new Date('2018-01-01'),
+        competenceId: targetProfile.tubes[0].id,
+        skillId: targetProfile.skills[0].id,
+        status: 'invalidated',
+      });
+      await databaseBuilder.commit();
+
+      // when
+      const knowledgeElementsByUserIdAndTubeId =
+        await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: null }, targetProfile);
+
+      // then
+      expect(knowledgeElementsByUserIdAndTubeId[userId]).to.deep.equal({
+        [targetProfile.tubes[0].id]: [],
+      });
+    });
+
+    it('should return an empty array on tube that does not have any targeted knowledge elements', async () => {
+      // given
+      const targetProfile = domainBuilder.buildTargetProfileWithLearningContent.withSimpleLearningContent();
+      const userId = databaseBuilder.factory.buildUser().id;
+      await databaseBuilder.commit();
+
+      // when
+      const knowledgeElementsByUserIdAndTubeId =
+        await knowledgeElementRepository.findValidatedTargetedGroupedByTubesForUsers({ [userId]: null }, targetProfile);
+
+      // then
+      expect(knowledgeElementsByUserIdAndTubeId[userId]).to.deep.equal({
+        [targetProfile.tubes[0].id]: [],
+      });
+    });
+  });
+
   describe('#findSnapshotForUsers', () => {
     const sandbox = sinon.createSandbox();
     let userId1;
