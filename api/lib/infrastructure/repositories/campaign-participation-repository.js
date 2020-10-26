@@ -144,6 +144,19 @@ module.exports = {
   countSharedParticipationOfCampaign(campaignId) {
     return this.count({ campaignId, isShared: true });
   },
+
+  async findSharedParticipationsWithUserIdsAndDates(campaignId) {
+    const results = await knex('campaign-participations')
+      .select('userId', 'sharedAt')
+      .where({ campaignId, isShared: true });
+
+    const userIdsAndDates = [];
+    for (const result of results) {
+      userIdsAndDates.push([result.userId, result.sharedAt]);
+    }
+
+    return Object.fromEntries(userIdsAndDates);
+  },
 };
 
 function _adaptModelToDb(campaignParticipation) {
