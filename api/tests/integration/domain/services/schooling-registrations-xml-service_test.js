@@ -8,7 +8,7 @@ describe('Integration | Services | schooling-registrations-xml-service', () => {
   describe('extractSchoolingRegistrationsInformationFromSIECLE', () => {
     const UAIFromSIECLE = '123ABC';
 
-    it('should parse in schoolingRegistrations informations', function() {
+    it('should parse in schoolingRegistrations informations', async function() {
       // given
       const buffer = iconv.encode(
         '<?xml version="1.0" encoding="ISO-8859-15"?>' +
@@ -99,8 +99,10 @@ describe('Integration | Services | schooling-registrations-xml-service', () => {
         division: '4A',
       }];
 
+      const payload = { path: __dirname + '/siecle-file/siecle-two-students.xml' };
+
       // when
-      const result = schoolingRegistrationsXmlService.extractSchoolingRegistrationsInformationFromSIECLE(buffer);
+      const result = await schoolingRegistrationsXmlService.extractSchoolingRegistrationsInformationFromSIECLE(payload);
 
       //then
       expect(result).to.deep.equal({ UAIFromSIECLE, resultFromExtraction: expectedSchoolingRegistrations });
@@ -210,7 +212,7 @@ describe('Integration | Services | schooling-registrations-xml-service', () => {
       const expectedSchoolingRegistrations = [];
 
       // when
-      const result = schoolingRegistrationsXmlService.extractSchoolingRegistrationsInformationFromSIECLE(buffer);
+      const result = schoolingRegistrationsXmlService.extractSchoolingRegistrationsInformationFromSIECLE(payload);
 
       //then
       expect(result).to.deep.equal({ UAIFromSIECLE, resultFromExtraction: expectedSchoolingRegistrations });
