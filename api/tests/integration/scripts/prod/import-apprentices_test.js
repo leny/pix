@@ -1,9 +1,10 @@
+/* eslint-disable no-sync */
 const { expect, databaseBuilder, catchErr, knex, sinon } = require('../../../test-helper');
 const importApprentices = require('../../../../scripts/prod/import-apprentices');
 const iconv = require('iconv-lite');
 const { CsvImportError } = require('../../../../lib/domain/errors');
 
-describe.only('Integration | Scripts | import-apprentices', () => {
+describe('Integration | Scripts | import-apprentices', () => {
   const fileSystem = {
     readFileSync: sinon.stub(),
   };

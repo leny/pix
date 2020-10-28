@@ -1,8 +1,8 @@
-// Usage: node create-assessment-campaigns.js path/file.csv
-// To use on file with columns |targetProfileId, name, externalId, title, customLandingPageText, creatorId|, those headers included
+/* eslint-disable no-sync */
+// Usage: node import-apprentices path/file.csv
+
 const { CsvRegistrationParser, CsvColumn } = require('../../lib/infrastructure/serializers/csv/csv-registration-parser');
 const { checkValidation } = require('../../lib/domain/validators/schooling-registration-validator');
-const SchoolingRegistration = require('../../lib/domain/models/SchoolingRegistration');
 const fs = require('fs');
 const { knex } = require('../../db/knex-database-connection');
 
