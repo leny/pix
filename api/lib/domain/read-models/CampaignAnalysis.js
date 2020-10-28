@@ -54,7 +54,6 @@ class CampaignTubeRecommendation {
     this.tube = tube;
     this.competenceId = competence.id;
     this.competenceName = competence.name;
-    this.tubePracticalTitle = tube.practicalTitle;
     this.areaColor = area.color;
     this.maxSkillLevelInTargetProfile = maxSkillLevelInTargetProfile;
     this.tutorials = tutorials;
@@ -65,6 +64,10 @@ class CampaignTubeRecommendation {
 
   get tubeId() {
     return this.tube.id;
+  }
+
+  get tubePracticalTitle() {
+    return this.tube.practicalTitle;
   }
 
   get id() {
