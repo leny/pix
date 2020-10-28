@@ -36,7 +36,7 @@ async function extractSchoolingRegistrationsInformationFromSIECLE(payload, organ
         if (jsFormat.PARAMETRES) {
           const UAIFromSIECLE = _getValueFromParsedElement(jsFormat.PARAMETRES.UAJ);
           if (UAIFromSIECLE !== organization.externalId) {
-            throw new FileValidationError(UAI_SIECLE_FILE_NOT_MATCH_ORGANIZATION_UAI);
+            reject(new FileValidationError(UAI_SIECLE_FILE_NOT_MATCH_ORGANIZATION_UAI));
           }
         }
       });
@@ -53,7 +53,7 @@ async function extractSchoolingRegistrationsInformationFromSIECLE(payload, organ
           if (isStudentNotLeftSchoolingRegistration && isStudentNotYetArrivedSchoolingRegistration && isStudentNotDuplicatedInTheSIECLEFile) {
             const nationalStudentId = _getValueFromParsedElement(jsFormat.ELEVE.ID_NATIONAL);
             if (nationalStudentId && nationalStudentIds.indexOf(nationalStudentId) !== -1) {
-              throw new SameNationalStudentIdInFileError(nationalStudentId);
+              reject(new SameNationalStudentIdInFileError(nationalStudentId));
             }
             nationalStudentIds.push(nationalStudentId);
             mapSchoolingRegistrationsByStudentId.set(jsFormat.ELEVE.$.ELEVE_ID, _mapStudentInformationToSchoolingRegistration(jsFormat));
@@ -77,9 +77,14 @@ async function extractSchoolingRegistrationsInformationFromSIECLE(payload, organ
       resolve(Array.from(mapSchoolingRegistrationsByStudentId.values()));
     });
 
+    streamerToParseOrganizationUAI.on('error', function(err) {
+      reject(err);
+    });
+
     streamerToParseSchoolingRegistrations.on('error', function(err) {
       reject(err);
     });
+
   });
 }
 

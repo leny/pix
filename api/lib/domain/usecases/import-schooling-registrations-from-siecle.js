@@ -11,9 +11,13 @@ module.exports = async function importSchoolingRegistrationsFromSIECLEFormat({ o
 
   if (format === 'xml') {
     const organization = await organizationRepository.get(organizationId);
-    schoolingRegistrationData = await schoolingRegistrationsXmlService.extractSchoolingRegistrationsInformationFromSIECLE(payload, organization, schoolingRegistrationsXmlService);
+    schoolingRegistrationData = await schoolingRegistrationsXmlService.extractSchoolingRegistrationsInformationFromSIECLE(payload, organization, schoolingRegistrationsXmlService).catch((error) => {
+      throw error;
+    });
     fs.unlink(payload.path, (err) => {
-      if (err) {throw err;}
+      if (err) {
+        throw err;
+      }
     });
   } else if (format === 'csv') {
     const buffer = await fs.readFile(payload.path);
