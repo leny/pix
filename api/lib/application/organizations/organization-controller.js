@@ -108,7 +108,7 @@ module.exports = {
     const organizationId = parseInt(request.params.id);
     const { format } = request.query;
 
-    await usecases.importSchoolingRegistrationsFromSIECLE({ organizationId, payload : request.payload, format });
+    await usecases.importSchoolingRegistrationsFromSIECLEFormat({ organizationId, payload : request.payload, format });
     return h.response(null).code(204);
   },
 
