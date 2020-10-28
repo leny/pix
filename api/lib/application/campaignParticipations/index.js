@@ -8,6 +8,13 @@ exports.register = async function(server) {
       path: '/api/campaign-participations',
       config: {
         handler: campaignParticipationController.find,
+        validate: {
+          query: Joi.object({
+            filter: Joi.object({
+              assessmentId: Joi.number().integer().required(),
+            }),
+          }),
+        },
         notes: [
           '- **Cette route est restreinte aux utilisateurs authentifiés**\n' +
           '- Récupération des campaign-participation par assessment',

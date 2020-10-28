@@ -555,4 +555,38 @@ describe('Acceptance | API | Campaign Participations', () => {
       expect(campaignProfile['external-id']).to.equal('Die Hard');
     });
   });
+
+  describe('GET /api/campaign-participations', function() {
+
+    beforeEach(() => {
+      airtableBuilder.mockList({ tableName: 'Competences' }).returns([]).activate();
+      airtableBuilder.mockList({ tableName: 'Domaines' }).returns([]).activate();
+      airtableBuilder.mockList({ tableName: 'Acquis' }).returns([]).activate();
+    });
+
+    afterEach(() => {
+      airtableBuilder.cleanAll();
+      cache.flushAll();
+    });
+
+    it('returns 401 when assessmentId is not  an integer', async () => {
+      const userId = databaseBuilder.factory.buildUser().id;
+      const organization = databaseBuilder.factory.buildOrganization();
+
+      databaseBuilder.factory.buildMembership({ userId, organizationId: organization.id });
+      databaseBuilder.factory.buildCampaign({ organizationId: organization.id });
+
+      await databaseBuilder.commit();
+
+      const options = {
+        method: 'GET',
+        url: '/api/campaign-participations?filter[assessmentId]=abcd',
+        headers: { authorization: generateValidRequestAuthorizationHeader(userId) },
+      };
+
+      const response = await server.inject(options);
+
+      expect(response.statusCode).to.equal(400);
+    });
+  });
 });
