@@ -1,6 +1,7 @@
 const dependencies = {
   answerRepository: require('../../infrastructure/repositories/answer-repository'),
   assessmentRepository: require('../../infrastructure/repositories/assessment-repository'),
+  authenticationService: require('../../domain/services/authentication-service'),
   badgeAcquisitionRepository: require('../../infrastructure/repositories/badge-acquisition-repository'),
   assessmentResultRepository: require('../../infrastructure/repositories/assessment-result-repository'),
   badgeCriteriaService: require('../../domain/services/badge-criteria-service'),
@@ -93,6 +94,7 @@ module.exports = injectDependencies({
   attachTargetProfilesToOrganization: require('./attach-target-profiles-to-organization'),
   archiveCampaign: require('./archive-campaign'),
   assignCertificationOfficerToJurySession: require('./assign-certification-officer-to-jury-session'),
+  authenticatePoleEmploiUser: require('./authenticate-pole-emploi-user'),
   authenticateUser: require('./authenticate-user'),
   beginCampaignParticipationImprovement: require('./begin-campaign-participation-improvement'),
   completeAssessment: require('./complete-assessment'),
