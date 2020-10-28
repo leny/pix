@@ -3,8 +3,11 @@ const { expect, sinon, domainBuilder, catchErr } = require('../../../test-helper
 const { UserNotFoundError, PasswordNotMatching } = require('../../../../lib/domain/errors');
 const User = require('../../../../lib/domain/models/User');
 
+const axios = require('axios');
+
 const encryptionService = require('../../../../lib/domain/services/encryption-service');
 const service = require('../../../../lib/domain/services/authentication-service');
+const settings = require('../../../../lib/config');
 
 describe('Unit | Domain | Services | authentication', () => {
 
@@ -82,6 +85,71 @@ describe('Unit | Domain | Services | authentication', () => {
         // then
         expect(error).to.be.an.instanceof(PasswordNotMatching);
       });
+    });
+  });
+
+  describe('#authenticatePoleEmploiUser', () => {
+
+    it('should return access token and ID token', async () => {
+      // given
+      const code = 'code';
+      const clientId = 'clientId';
+      const redirectUri = 'redirectUri';
+      const accessToken = 'accessToken';
+      const idToken = 'idToken';
+
+      const expectedResult = { accessToken, idToken };
+
+      const expectedUrl = settings.poleEmploi.tokenUrl;
+      const expectedData = `client_secret=${settings.poleEmploi.clientSecret}&grant_type=authorization_code&code=${code}&client_id=${clientId}&redirect_uri=${redirectUri}`;
+      const expectedHeaders = { headers: { 'content-type': 'application/x-www-form-urlencoded' } };
+
+      const response = {
+        data: {
+          access_token: accessToken,
+          id_token: idToken,
+        },
+      };
+      sinon.stub(axios, 'post').resolves(response);
+
+      // when
+      const result = await service.authenticatePoleEmploiUser({ code, clientId, redirectUri });
+
+      // then
+      expect(result).to.deep.equal(expectedResult);
+      expect(axios.post).to.have.been.calledWith(expectedUrl, expectedData, expectedHeaders);
+    });
+  });
+
+  describe('#getPoleEmploiUserInfo', () => {
+
+    it('should return email, firstName, familyName, id', async () => {
+      // given
+      const accessToken = 'accessToken';
+      const expectedUrl = settings.poleEmploi.candidatInfoUrl;
+      const expectedHeaders = { headers: { 'Authorization': `Bearer ${accessToken}`, 'content-type': 'application/json' } };
+
+      const response = {
+        data: {
+          sub: '094b83ac-2e20-4aa8-b438-0bc91748e4a6',
+          gender: 'gender',
+          family_name: 'familyName',
+          given_name: 'givenName',
+          email: 'user@example.net',
+          idIdentiteExterne: '094b83ac-2e20-4aa8-b438-0bc91748e4a6',
+        },
+      };
+
+      const expectedResult = response.data;
+
+      sinon.stub(axios, 'get').resolves(response);
+
+      // when
+      const result = await service.getPoleEmploiUserInfo(accessToken);
+
+      // then
+      expect(result).to.deep.equal(expectedResult);
+      expect(axios.get).to.have.been.calledWith(expectedUrl, expectedHeaders);
     });
   });
 
