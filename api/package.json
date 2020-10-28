@@ -82,6 +82,7 @@
     "yargs": "^15.4.1"
   },
   "devDependencies": {
+    "axios": "^0.21.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-sorted": "^0.2.0",
