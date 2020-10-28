@@ -69,21 +69,16 @@ async function extractSchoolingRegistrationsInformationFromSIECLE(payload, organ
           }
         }
       });
-
     });
+
     fileStream.pipe(saxParser);
 
     streamerToParseSchoolingRegistrations.on('end', function() {
-      fs.unlink(payload.path, (err) => {
-        if (err) {
-          throw err; // Todo create custom exception
-        }
-        resolve(isEmpty(mapSchoolingRegistrationsByStudentId.values() ? [] : Array.from(mapSchoolingRegistrationsByStudentId.values())));
-      });
+      resolve(Array.from(mapSchoolingRegistrationsByStudentId.values()));
+    });
 
-      streamerToParseSchoolingRegistrations.on('error', function(err) {
-        reject(err);
-      });
+    streamerToParseSchoolingRegistrations.on('error', function(err) {
+      reject(err);
     });
   });
 }
@@ -101,7 +96,7 @@ function _mapStudentInformationToSchoolingRegistration(jsFormat) {
     birthProvinceCode: _getValueFromParsedElement(jsFormat.ELEVE.CODE_DEPARTEMENT_NAISS),
     birthCityCode: _getValueFromParsedElement(jsFormat.ELEVE.CODE_COMMUNE_INSEE_NAISS),
     birthCity: _getValueFromParsedElement(jsFormat.ELEVE.VILLE_NAISS),
-    MEFCode: (jsFormat.ELEVE.SCOLARITE_AN_DERNIER) ? _getValueFromParsedElement(jsFormat.ELEVE.SCOLARITE_AN_DERNIER[0].CODE_MEF) : null,
+    MEFCode: _getValueFromParsedElement(jsFormat.ELEVE.CODE_MEF),
     status: _getValueFromParsedElement(jsFormat.ELEVE.CODE_STATUT),
     nationalStudentId: _getValueFromParsedElement(jsFormat.ELEVE.ID_NATIONAL),
   };

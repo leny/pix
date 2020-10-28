@@ -11,10 +11,10 @@ module.exports = async function importSchoolingRegistrationsFromSIECLEFormat({ o
 
   if (format === 'xml') {
     const organization = await organizationRepository.get(organizationId);
-    if (UAIFromSIECLE !== organization.externalId) {
-      throw new FileValidationError('Aucun étudiant n’a été importé. L’import n’est pas possible car l’UAI du fichier SIECLE ne correspond pas à celui de votre établissement. En cas de difficulté, contactez support.pix.fr.');
-    }
-    schoolingRegistrationData = resultFromExtraction;
+    schoolingRegistrationData = await schoolingRegistrationsXmlService.extractSchoolingRegistrationsInformationFromSIECLE(payload, organization, schoolingRegistrationsXmlService);
+    fs.unlink(payload.path, (err) => {
+      if (err) {throw err;}
+    });
   } else if (format === 'csv') {
     const buffer = await fs.readFile(payload.path);
     const csvSiecleParser = new SchoolingRegistrationParser(buffer, organizationId);
