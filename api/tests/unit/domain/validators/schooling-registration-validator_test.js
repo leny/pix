@@ -6,6 +6,7 @@ describe('Unit | Domain | Schooling Registration validator', () => {
 
     const validAttributes = {
       nationalStudentId: '12345',
+      nationalApprenticeId: '54321',
       firstName: 'Ellen',
       lastName: 'Ripley',
       birthdate: '1979-05-25',
@@ -169,6 +170,68 @@ describe('Unit | Domain | Schooling Registration validator', () => {
         expect(error.key).to.equal('birthCityCode');
         expect(error.why).to.equal('length');
         expect(error.limit).to.equal(5);
+      });
+    });
+
+    context('nationalStudentId', () => {
+      it('throw an error when status is ST and nationalStudentId is undefined', async () => {
+        const status = 'ST';
+
+        const error = await catchErr(checkValidation)({ ...validAttributes, nationalStudentId: status, nationalStudentId: undefined });
+
+        expect(error.key).to.equal('nationalStudentId');
+        expect(error.why).to.equal('required');
+      });
+
+      it('is valid when nationalStudentId is undefined and status is not AP', async () => {
+        const status = 'AP';
+
+        try {
+          checkValidation({ ...validAttributes, status, nationalStudentId: undefined });
+        } catch (e) {
+          expect.fail('SchoolingRegistration is valid when nationalStudentId is undefined and status is AP');
+        }
+      });
+
+      it('is valid when nationalStudentId is defined and status is  ST', async () => {
+        const status = 'ST';
+
+        try {
+          checkValidation({ ...validAttributes, status, nationalStudentId: 'AZER' });
+        } catch (e) {
+          expect.fail('SchoolingRegistration is valid when nationalStudentId defined and status is ST');
+        }
+      });
+    });
+
+    context('nationalApprenticeId', () => {
+      it('throw an error when status is AP and nationalApprenticeId is undefined', async () => {
+        const status = 'AP';
+
+        const error = await catchErr(checkValidation)({ ...validAttributes, status, nationalApprenticeId: undefined });
+
+        expect(error.key).to.equal('nationalApprenticeId');
+        expect(error.why).to.equal('required');
+      });
+
+      it('is valid when nationalApprenticeId is undefined and status is not AP', async () => {
+        const status = 'ST';
+
+        try {
+          checkValidation({ ...validAttributes, status, nationalApprenticeId: undefined });
+        } catch (e) {
+          expect.fail('SchoolingRegistration is valid when nationalApprenticeId is undefined and birthCountry is not AP');
+        }
+      });
+
+      it('is valid when nationalApprenticeId is defined and status is  ST', async () => {
+        const status = 'AP';
+
+        try {
+          checkValidation({ ...validAttributes, status, nationalApprenticeId: 'AZER' });
+        } catch (e) {
+          expect.fail('SchoolingRegistration is valid when nationalApprenticeId defined and status is AP');
+        }
       });
     });
   });

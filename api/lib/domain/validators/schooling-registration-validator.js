@@ -7,11 +7,22 @@ const CITY_CODE_LENGTH = 5;
 const PROVINCE_CODE_MIN_LENGTH = 2;
 const PROVINCE_CODE_MAX_LENGTH = 3;
 const COUNTRY_CODE_LENGTH = 5;
-const STATUSES = ['ST'];
+const STANDARD = 'ST';
+const APPRENTICE = 'AP';
+const STATUSES = [STANDARD, APPRENTICE];
 const FRANCE_COUNTRY_CODE = '99100';
 
 const validationSchema = Joi.object({
-  nationalStudentId: Joi.string().max(MAX_LENGTH).required(),
+  nationalStudentId: Joi.alternatives().conditional('status', {
+    is: STANDARD,
+    then: Joi.string().max(MAX_LENGTH).required(),
+    otherwise: Joi.string().max(MAX_LENGTH).optional(),
+  }),
+  nationalApprenticeId: Joi.alternatives().conditional('status', {
+    is: APPRENTICE,
+    then: Joi.string().max(MAX_LENGTH).required(),
+    otherwise: Joi.string().max(MAX_LENGTH).optional(),
+  }),
   firstName: Joi.string().max(MAX_LENGTH).required(),
   middleName: Joi.string().max(MAX_LENGTH).optional(),
   thirdName: Joi.string().max(MAX_LENGTH).optional(),
