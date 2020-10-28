@@ -132,6 +132,7 @@ module.exports = (function() {
       dayBeforeCompetenceResetV2: _getNumber(process.env.DAY_BEFORE_COMPETENCE_RESET_V2,7),
       garAccessV2: isFeatureEnabled(process.env.GAR_ACCESS_V2),
       newYearSchoolingRegistrationsImportDate: _getDate(process.env.NEW_YEAR_SCHOOLING_REGISTRATIONS_IMPORT_DATE),
+      isPoleEmploiEnabled: isFeatureEnabled(process.env.IS_POLE_EMPLOI_ENABLED),
     },
 
     featureToggles: {
@@ -150,6 +151,12 @@ module.exports = (function() {
       maxBreadcrumbs: _getNumber(process.env.SENTRY_MAX_BREADCRUMBS, 100),
       debug: isFeatureEnabled(process.env.SENTRY_DEBUG),
       maxValueLength: 1000,
+    },
+
+    poleEmploi: {
+      clientSecret: process.env.PE_CLIENT_SECRET,
+      tokenUrl: process.env.PE_TOKEN_URL,
+      candidatInfoUrl: process.env.PE_CANDIDAT_INFO_URL,
     },
   };
 
