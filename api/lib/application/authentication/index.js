@@ -72,7 +72,26 @@ exports.register = async (server) => {
         tags: ['api'],
       },
     },
-
+    {
+      method: 'POST',
+      path: '/api/token/pole-emploi',
+      config: {
+        auth: false,
+        payload: {
+          allow: 'application/x-www-form-urlencoded',
+        },
+        // validate: {
+        //   payload: Joi.object().required().keys({
+        //     grant_type: 'password',
+        //     username: Joi.string().required(),
+        //     password: Joi.string().required(),
+        //     scope: Joi.string(),
+        //   }),
+        // },
+        handler: AuthenticationController.authenticatePoleEmploiUser,
+        tags: ['api'],
+      },
+    },
   ]);
 };
 

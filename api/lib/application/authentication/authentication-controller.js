@@ -1,5 +1,6 @@
 const tokenService = require('../../domain/services/token-service');
 const usecases = require('../../domain/usecases');
+const settings = require('../../config');
 
 module.exports = {
 
@@ -43,6 +44,18 @@ module.exports = {
         type: 'external-user-authentication-requests',
       },
     };
+    return h.response(response).code(200);
+  },
+
+  async authenticatePoleEmploiUser(request, h) {
+    if (!settings.features.isPoleEmploiEnabled) {
+      return h.response().code(400);
+    }
+
+    const { code, 'client_id': clientId, 'redirect_uri': redirectUri } = request.payload;
+
+    const response = await usecases.authenticatePoleEmploiUser({ code, clientId, redirectUri });
+
     return h.response(response).code(200);
   },
 };
