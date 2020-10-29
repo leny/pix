@@ -16,10 +16,10 @@ describe('Unit | Domain | Events | handle-campaign-participation-results-sending
         '"nom":"Campagne Pôle Emploi",' +
         '"dateDebut":"2020-01-01T00:00:00.000Z",' +
         '"dateFin":"2020-02-01T00:00:00.000Z",' +
-        '"typeCampagne":"EVALUATION",' +
+        '"type":"EVALUATION",' +
         '"idCampagne":11223344,' +
         '"codeCampagne":"CODEPE123",' +
-        '"URLCampagne":"https://app.pix.fr/campagnes/CODEPE123",' +
+        '"urlCampagne":"https://app.pix.fr/campagnes/CODEPE123",' +
         '"nomOrganisme":"Pix",' +
         '"typeOrganisme":"externe"' +
       '},' +
@@ -33,14 +33,14 @@ describe('Unit | Domain | Events | handle-campaign-participation-results-sending
         '"typeTest":"DI",' +
         '"referenceExterne":55667788,' +
         '"dateDebut":"2020-01-02T00:00:00.000Z",' +
-        '"dateModification":"2020-01-03T00:00:00.000Z",' +
+        '"dateProgression":"2020-01-03T00:00:00.000Z",' +
         '"dateValidation":"2020-01-03T00:00:00.000Z",' +
         '"evaluationCible":42.5,' +
-        '"uniteValidation":"A",' +
+        '"uniteEvaluation":"A",' +
         '"elementsEvalues":[{' +
           '"libelle":"Gérer des données",' +
-          '"categorie":"compétence",' +
-          '"type":"compétence Pix",' +
+          '"categorie":"competence",' +
+          '"type":"competence Pix",' +
           '"domaineRattachement":"Information et données",' +
           '"nbSousElements":3,' +
           '"evaluation":{' +
